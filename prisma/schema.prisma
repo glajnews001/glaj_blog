@@ -1,0 +1,53 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String   @id
+  firstname  String
+  lastname   String
+  email      String   @unique
+  phone      String
+  password   String
+  active     Boolean  @default(true)
+  permission String
+  wallet     Int      @default(0)
+  noBplog    Int      @default(0)
+  created    DateTime @default(now())
+}
+
+model Post {
+  id           String   @id
+  title        String
+  content      String   @db.Text
+  imageUrl     String
+  publishBy    String   @default("")
+  category     String
+  blogType     String
+  fileType     String
+  blogId       String
+  isEyeWitness Boolean  @default(false)
+  isActive     Boolean  @default(true)
+  isApproved   Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  @@index([category, createdAt])
+  @@index([fileType, createdAt])
+  @@index([blogType, createdAt])
+}
+
+model Message {
+  id        String   @id
+  name      String
+  email     String
+  phone     String
+  message   String   @db.Text
+  blogId    String
+  isSeen    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

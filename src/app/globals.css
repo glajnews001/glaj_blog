@@ -3,24 +3,87 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --ink: #01017a;
+  --navy: #002e5f;
+  --gold: #daa520;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ink: var(--ink);
+  --color-navy: var(--navy);
+  --color-gold: var(--gold);
+  --font-sans: Arial, Helvetica, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  margin: 0;
+  background: #ffffff;
+  color: #171717;
   font-family: Arial, Helvetica, sans-serif;
+}
+
+a {
+  text-decoration: none;
+}
+
+.home-hero-grid {
+  display: grid;
+  grid-template-columns: 25% 48% 25%;
+  gap: 10px;
+}
+
+.trending-panel {
+  display: block;
+}
+
+.latest-panel {
+  display: block;
+}
+
+.category-badge {
+  clip-path: polygon(25% 0%, 100% 0, 100% 100%, 25% 100%, 0% 50%);
+}
+
+@media (max-width: 920px) {
+  .home-hero-grid {
+    grid-template-columns: 40% 52%;
+  }
+
+  .trending-panel {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .home-hero-grid {
+    grid-template-columns: 100%;
+  }
+
+  .trending-panel {
+    display: block;
+  }
+
+  .latest-panel {
+    display: none;
+  }
+}
+
+.rich-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+}
+
+.ql-content p {
+  margin: 0 0 0.75rem;
+}
+
+.ql-content img,
+.article-body img {
+  max-width: 100%;
 }
