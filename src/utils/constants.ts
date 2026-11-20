@@ -1,9 +1,33 @@
+/**
+ * Public origin used for share links, canonical URLs, the sitemap and social
+ * previews. A value that points at the Vercel dashboard (vercel.com/...) or is
+ * not a valid URL is ignored, falling back to the production domain Vercel
+ * provides, then to glajnews.com.
+ */
+function resolveSiteUrl(): string {
+  const candidates = [
+    process.env.NEXT_PUBLIC_SITE_URL,
+    process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : undefined,
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    try {
+      const url = new URL(candidate.trim());
+      if (url.hostname === "vercel.com" || url.hostname.endsWith(".vercel.com")) continue;
+      return url.origin;
+    } catch {
+      continue;
+    }
+  }
+  return "https://glajnews.com";
+}
+
 export const SITE = {
   name: "Glaj News",
   title: "Glaj News - News in one place",
   description:
     "Glaj News brings you the latest politics, sport, business, entertainment, education and foreign news in one place.",
-  url: (process.env.NEXT_PUBLIC_SITE_URL ?? "https://glajnews.com").replace(/\/$/, ""),
+  url: resolveSiteUrl(),
   adClient: "ca-pub-7832400333464323",
 } as const;
 

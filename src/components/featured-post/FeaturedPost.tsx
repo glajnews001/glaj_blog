@@ -28,7 +28,7 @@ export function FeaturedPost({ post }: FeaturedPostProps) {
         priority
         className="mb-4 aspect-[16/10] w-full max-h-[500px] object-cover"
       />
-      {post.publishBy && <div className="pb-4 font-bold text-navy">Publish by : {post.publishBy}</div>}
+      {post.publishBy && <div className="pb-4 font-bold text-navy">Published by : {post.publishBy}</div>}
       <p className="text-base">{post.excerpt}</p>
       <Link href={`/posts/${post.id}`}>Read More ...</Link>
     </article>

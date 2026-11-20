@@ -11,7 +11,7 @@ type ArticleBodyProps = { post: PostDetail };
 export function ArticleBody({ post }: ArticleBodyProps) {
   const text = (
     <div>
-      {post.publishBy && <div className="pb-4 font-bold text-navy">Publish by : {post.publishBy}</div>}
+      {post.publishBy && <div className="pb-4 font-bold text-navy">Published by : {post.publishBy}</div>}
       <RichContent html={post.content} />
     </div>
   );

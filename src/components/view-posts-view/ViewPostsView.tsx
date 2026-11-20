@@ -15,7 +15,7 @@ const columns: DataTableColumn<AdminPostRow>[] = [
   { key: "title", header: "Title", render: (row) => <span className="line-clamp-2 min-w-[10rem]">{row.title}</span> },
   { key: "ref", header: "Post ID", hideOnMobile: true, render: (row) => row.blogId },
   { key: "category", header: "Category", hideOnMobile: true, render: (row) => row.category },
-  { key: "publishBy", header: "Publish By", hideOnMobile: true, render: (row) => row.publishBy },
+  { key: "publishBy", header: "Published By", hideOnMobile: true, render: (row) => row.publishBy },
   { key: "status", header: "Status", render: (row) => (row.isActive ? "active" : "Deleted") },
   { key: "more", header: "More..", render: (row) => <PostDetailButton postId={row.id} /> },
 ];
