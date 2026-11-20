@@ -1,13 +1,15 @@
 import type { IconType } from "react-icons";
 
-export function StatCard({ label, value, icon: Icon, tone }: { label: string; value: number; icon: IconType; tone: string }) {
+type StatCardProps = { label: string; value: number; icon: IconType; color: string };
+
+export function StatCard({ label, value, icon: Icon, color }: StatCardProps) {
   return (
-    <article className={`flex flex-col justify-between rounded p-6 text-white ${tone}`}>
+    <div className="flex flex-col justify-around rounded-[5px] px-4 py-8 text-white/95" style={{ backgroundColor: color }}>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold tracking-wide">{label}</h3>
-        <Icon className="text-2xl" />
+        <h3 className="m-0 text-base font-medium uppercase">{label}</h3>
+        <Icon className="text-[25px]" aria-hidden />
       </div>
-      <p className="mt-6 text-4xl font-semibold">{value}</p>
-    </article>
+      <p className="mb-0 mt-2 text-[2.5rem] font-medium leading-tight">{value.toLocaleString()}</p>
+    </div>
   );
 }

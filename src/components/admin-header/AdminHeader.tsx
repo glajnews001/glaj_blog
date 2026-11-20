@@ -1,17 +1,18 @@
-"use client";
-
 import { BsFillBellFill, BsFillEnvelopeFill, BsJustify, BsPersonCircle } from "react-icons/bs";
 
-export function AdminHeader({ onToggle }: { onToggle: () => void }) {
+type AdminHeaderProps = { userName: string; onMenu: () => void };
+
+export function AdminHeader({ userName, onMenu }: AdminHeaderProps) {
   return (
-    <header className="flex h-[60px] items-center justify-between bg-[#1d2634] px-6 text-white shadow-[0_6px_7px_-3px_rgba(0,0,0,0.35)] lg:col-start-2">
-      <button type="button" className="text-2xl lg:hidden" onClick={onToggle} aria-label="Open menu">
+    <header className="sticky top-0 z-20 flex h-[60px] shrink-0 items-center justify-between bg-white px-4 shadow-[0_6px_7px_-3px_rgba(0,0,0,0.35)] tablet:px-[30px]">
+      <button type="button" onClick={onMenu} aria-label="Open menu" className="text-xl min-[993px]:invisible">
         <BsJustify />
       </button>
-      <div className="ml-auto flex items-center gap-4 text-xl">
-        <BsFillBellFill />
-        <BsFillEnvelopeFill />
-        <BsPersonCircle />
+      <div className="flex items-center gap-2.5 text-xl">
+        <BsFillBellFill aria-hidden />
+        <BsFillEnvelopeFill aria-hidden />
+        <BsPersonCircle aria-hidden />
+        <span className="hidden max-w-[10rem] truncate text-sm tablet:inline">{userName}</span>
       </div>
     </header>
   );

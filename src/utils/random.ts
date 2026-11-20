@@ -1,8 +1,10 @@
-export function getRandomString(size = 50, chars?: string) {
-  const possibleCharacters = chars || "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const values = new Uint32Array(size);
-  crypto.getRandomValues(values);
-  return Array.from(values, (value) => possibleCharacters[value % possibleCharacters.length]).join("");
-}
+import { randomInt } from "node:crypto";
 
-export const ID_CHARS = "1234567890qwertyuiopasdfhjklzxcvbnmQWERTYUIOPASDFHJKLZXCVBNM";
+const ALPHANUMERIC = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+/** Cryptographically secure random id (server only). */
+export function randomId(size = 35, alphabet: string = ALPHANUMERIC): string {
+  let out = "";
+  for (let i = 0; i < size; i += 1) out += alphabet.charAt(randomInt(alphabet.length));
+  return out;
+}

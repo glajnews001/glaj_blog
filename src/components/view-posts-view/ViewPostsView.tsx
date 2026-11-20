@@ -1,86 +1,36 @@
-"use client";
+import { AdminPagination } from "@/components/admin-pagination/AdminPagination";
+import { AdminSection } from "@/components/admin-section/AdminSection";
+import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
+import { PostDetailButton } from "@/components/post-detail-button/PostDetailButton";
+import { TableToolbar } from "@/components/table-toolbar/TableToolbar";
+import type { PostsPagePayload } from "@/models/page.dto";
+import type { AdminPostRow } from "@/models/post.dto";
+import { formatDateTime } from "@/utils/time";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import type { PostView } from "@/models/post.model";
-import { AdminList } from "@/components/admin-list/AdminList";
-import { Pagination } from "@/components/pagination/Pagination";
-import { PostDetailModal } from "@/components/post-detail-modal/PostDetailModal";
-import { formatStamp } from "@/utils/time";
+type ViewPostsViewProps = { data: PostsPagePayload };
 
-const PAGE_SIZE = 20;
+const columns: DataTableColumn<AdminPostRow>[] = [
+  { key: "sn", header: "S/N", render: (_row, index) => index + 1 },
+  { key: "created", header: "Created", hideOnMobile: true, render: (row) => formatDateTime(row.createdAt) },
+  { key: "title", header: "Title", render: (row) => <span className="line-clamp-2 min-w-[10rem]">{row.title}</span> },
+  { key: "ref", header: "Post ID", hideOnMobile: true, render: (row) => row.blogId },
+  { key: "category", header: "Category", hideOnMobile: true, render: (row) => row.category },
+  { key: "publishBy", header: "Publish By", hideOnMobile: true, render: (row) => row.publishBy },
+  { key: "status", header: "Status", render: (row) => (row.isActive ? "active" : "Deleted") },
+  { key: "more", header: "More..", render: (row) => <PostDetailButton postId={row.id} /> },
+];
 
-export function ViewPostsView({ posts }: { posts: PostView[] }) {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [selected, setSelected] = useState<PostView | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  const filtered = useMemo(() => {
-    const needle = search.toLowerCase();
-    return posts.filter((post) => post.blogid.toLowerCase().includes(needle) || post.category.toLowerCase().includes(needle) || post.title.toLowerCase().includes(needle));
-  }, [posts, search]);
-
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const records = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const remove = async () => {
-    if (!selected || busy) return;
-    setBusy(true);
-    const response = await fetch(`/api/posts/${selected.id}`, { method: "DELETE" });
-    setBusy(false);
-    if (!response.ok) {
-      const data = await response.json();
-      window.alert(data.message || "Could not delete the post.");
-      return;
-    }
-    setSelected(null);
-    router.refresh();
-  };
-
+export function ViewPostsView({ data }: ViewPostsViewProps) {
   return (
-    <>
-      {selected ? <PostDetailModal post={selected} onClose={() => setSelected(null)} onDelete={remove} /> : null}
-      <AdminList title="Post Register" count={posts.length} countLabel="Post" search={search} onSearch={(value) => { setSearch(value); setPage(1); }} placeholder="Search by name">
-        <table className="w-full border-separate border-spacing-0">
-          <thead>
-            <tr>
-              {["S/N", "Created", "Post ID", "Category", "Publish By", "Status", "More.."].map((heading) => (
-                <th key={heading} className={`border-b-2 border-[#eb9486] bg-[#f9f8f8] p-3 text-left ${["Created", "Category", "Publish By"].includes(heading) ? "max-[650px]:hidden" : ""}`}>
-                  {heading}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {records.length === 0 ? (
-              <tr>
-                <td className="p-3" colSpan={7}>
-                  No Data Found
-                </td>
-              </tr>
-            ) : (
-              records.map((post, index) => (
-                <tr key={post.id} className="odd:bg-[#ece9e9]">
-                  <td className="border-b border-gray-200 p-3">{(page - 1) * PAGE_SIZE + index + 1}</td>
-                  <td className="border-b border-gray-200 p-3 max-[650px]:hidden">{formatStamp(post.createdAt)}</td>
-                  <td className="border-b border-gray-200 p-3">{post.blogid}</td>
-                  <td className="border-b border-gray-200 p-3 max-[650px]:hidden">{post.category}</td>
-                  <td className="border-b border-gray-200 p-3 max-[650px]:hidden">{post.PublishBy}</td>
-                  <td className="border-b border-gray-200 p-3">{post.is_active ? "active" : "Deleted"}</td>
-                  <td className="border-b border-gray-200 p-3">
-                    <button type="button" className="rounded bg-green-700 px-3 py-1 text-white" onClick={() => setSelected(post)}>
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        <Pagination page={page} pages={pages} onPage={setPage} />
-      </AdminList>
-    </>
+    <AdminSection title="Post Register">
+      <TableToolbar countLabel={`${data.total} Post`} query={data.query} placeholder="Search by title, ID or category" />
+      <DataTable
+        columns={columns}
+        rows={data.items}
+        rowKey={(row) => row.id}
+        startIndex={(data.page - 1) * data.pageSize}
+      />
+      <AdminPagination basePath="/auth/dashboard/viewpost" page={data.page} pageCount={data.pageCount} query={data.query} />
+    </AdminSection>
   );
 }

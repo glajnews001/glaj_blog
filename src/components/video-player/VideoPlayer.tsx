@@ -1,38 +1,41 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import { Button } from "@/components/button/Button";
+import { cn } from "@/utils/cn";
 
-export function VideoPlayer({ videoUrl }: { videoUrl: string }) {
+type VideoPlayerProps = { src: string; className?: string };
+
+/** Video with a simple Play / Pause button, no download option and no right-click menu. */
+export function VideoPlayer({ src, className }: VideoPlayerProps) {
+  const ref = useRef<HTMLVideoElement>(null);
   const [playing, setPlaying] = useState(false);
 
+  const toggle = () => {
+    const video = ref.current;
+    if (!video) return;
+    if (video.paused) void video.play();
+    else video.pause();
+  };
+
   return (
-    <div>
-      <button
-        type="button"
-        className="mb-2 rounded bg-black px-4 py-1 text-white"
-        onClick={(event) => {
-          const video = event.currentTarget.parentElement?.querySelector("video");
-          if (!video) return;
-          if (video.paused) {
-            void video.play();
-            setPlaying(true);
-          } else {
-            video.pause();
-            setPlaying(false);
-          }
-        }}
-      >
+    <div className={cn("w-full", className)}>
+      <Button variant="navy" small onClick={toggle} className="mb-2">
         {playing ? "Pause" : "Play"}
-      </button>
+      </Button>
       <video
-        className="max-h-[500px] w-full bg-black"
+        ref={ref}
+        src={src}
         controls={false}
         controlsList="nodownload"
-        onContextMenu={(event) => event.preventDefault()}
-        onPause={() => setPlaying(false)}
+        playsInline
+        preload="metadata"
         onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onEnded={() => setPlaying(false)}
+        onContextMenu={(event) => event.preventDefault()}
+        className="max-h-[500px] w-full bg-black"
       >
-        <source src={videoUrl} type="video/mp4" />
         Your browser does not support the video tag.
       </video>
     </div>

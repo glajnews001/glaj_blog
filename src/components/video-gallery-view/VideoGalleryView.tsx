@@ -1,20 +1,26 @@
-import type { VideoPayload } from "@/models/page.model";
+import { Fragment } from "react";
 import { AdSlot } from "@/components/ad-slot/AdSlot";
+import { EmptyState } from "@/components/empty-state/EmptyState";
 import { SiteShell } from "@/components/site-shell/SiteShell";
 import { VideoGallerySection } from "@/components/video-gallery-section/VideoGallerySection";
+import type { VideoGalleryPayload } from "@/models/page.dto";
 
-export function VideoGalleryView({ data }: { data: VideoPayload }) {
+type VideoGalleryViewProps = { data: VideoGalleryPayload };
+
+export function VideoGalleryView({ data }: VideoGalleryViewProps) {
   return (
     <SiteShell>
-      <AdSlot slot="6701540410" />
-      <VideoGallerySection title="Trending News" posts={data.trending} />
-      <VideoGallerySection title="Politics" posts={data.politics} />
-      <AdSlot slot="5196887055" />
-      <VideoGallerySection title="Sport" posts={data.sport} />
-      <AdSlot slot="2967892118" />
-      <VideoGallerySection title="Entertainment" posts={data.entertainment} />
-      <AdSlot slot="8752988689" />
-      <VideoGallerySection title="Business" posts={data.business} />
+      <AdSlot />
+      {data.isEmpty ? (
+        <EmptyState title="No Videos Yet" message="Check back soon for new video clips." />
+      ) : (
+        data.sections.map((section, index) => (
+          <Fragment key={section.key}>
+            <VideoGallerySection title={section.title} videos={section.videos} />
+            {index > 0 && <AdSlot />}
+          </Fragment>
+        ))
+      )}
     </SiteShell>
   );
 }

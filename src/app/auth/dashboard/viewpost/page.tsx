@@ -1,14 +1,10 @@
-import { AdminShell } from "@/components/admin-shell/AdminShell";
+import type { Metadata } from "next";
+import { DashboardController, type ListQuery } from "@/controllers/dashboard.controller";
 import { ViewPostsView } from "@/components/view-posts-view/ViewPostsView";
-import { PostController } from "@/controllers/post.controller";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Post Register" };
 
-export default async function ViewPostPage() {
-  const posts = await PostController.list();
-  return (
-    <AdminShell>
-      <ViewPostsView posts={posts} />
-    </AdminShell>
-  );
+export default async function ViewPostPage({ searchParams }: { searchParams: Promise<ListQuery> }) {
+  const data = await DashboardController.getPosts(await searchParams);
+  return <ViewPostsView data={data} />;
 }

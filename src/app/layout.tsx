@@ -1,57 +1,42 @@
-import type { Metadata } from "next";
-import Script from "next/script";
+import type { Metadata, Viewport } from "next";
+import { Montserrat } from "next/font/google";
+import type { ReactNode } from "react";
+import { SITE } from "@/utils/constants";
 import "./globals.css";
-import { JsonLd } from "@/components/json-ld/JsonLd";
-import { AD_CLIENT, SITE_DESCRIPTION, SITE_NAME } from "@/utils/constants";
-import { organizationJsonLd, siteUrl, websiteJsonLd } from "@/utils/seo";
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  weight: ["400", "800"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl()),
-  title: {
-    default: `${SITE_NAME} - ${SITE_DESCRIPTION}`,
-    template: `%s | ${SITE_NAME}`,
-  },
-  description: "Glaj News publishes politics, sport, business, entertainment, and eyewitness stories from Nigeria and abroad.",
-  applicationName: SITE_NAME,
-  authors: [{ name: SITE_NAME, url: siteUrl() }],
-  creator: SITE_NAME,
-  publisher: SITE_NAME,
-  category: "news",
-  alternates: {
-    canonical: "/",
-    types: { "application/rss+xml": "/feed.xml" },
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: { index: true, follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 },
-  },
+  metadataBase: new URL(SITE.url),
+  title: { default: SITE.title, template: `%s | ${SITE.name}` },
+  description: SITE.description,
+  applicationName: SITE.name,
+  icons: { icon: "/image/logo1.png", apple: "/image/logo1.png" },
   openGraph: {
     type: "website",
-    locale: "en_NG",
-    url: siteUrl(),
-    siteName: SITE_NAME,
-    title: `${SITE_NAME} - ${SITE_DESCRIPTION}`,
-    description: "Politics, sport, business, entertainment, and eyewitness news from Glaj News.",
-    images: [{ url: "/image/logo.svg", alt: SITE_NAME }],
+    siteName: SITE.name,
+    title: SITE.title,
+    description: SITE.description,
+    images: ["/image/logo.png"],
   },
-  twitter: {
-    card: "summary_large_image",
-    title: `${SITE_NAME} - ${SITE_DESCRIPTION}`,
-    description: "Politics, sport, business, entertainment, and eyewitness news from Glaj News.",
-    images: ["/image/logo.svg"],
-  },
-  icons: { icon: "/image/logo.svg", apple: "/image/logo.svg" },
+  twitter: { card: "summary_large_image" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#002e5f",
+};
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body>
-        <JsonLd data={[organizationJsonLd(), websiteJsonLd()]} />
-        <Script async src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${AD_CLIENT}`} crossOrigin="anonymous" strategy="afterInteractive" />
-        {children}
-      </body>
+    <html lang="en" className={montserrat.variable}>
+      <body>{children}</body>
     </html>
   );
 }

@@ -1,10 +1,8 @@
-import { AdminShell } from "@/components/admin-shell/AdminShell";
+import type { Metadata } from "next";
 import { CreatePostView } from "@/components/create-post-view/CreatePostView";
 
+export const metadata: Metadata = { title: "Create Post" };
+
 export default function CreatePostPage() {
-  return (
-    <AdminShell>
-      <CreatePostView />
-    </AdminShell>
-  );
+  return <CreatePostView />;
 }

@@ -1,18 +1,12 @@
 import type { Metadata } from "next";
+import { VideoController } from "@/controllers/video.controller";
 import { VideoGalleryView } from "@/components/video-gallery-view/VideoGalleryView";
-import { PostController } from "@/controllers/post.controller";
-import { pageMetadata } from "@/utils/seo";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
-export const metadata: Metadata = pageMetadata({
-  title: "Video Clips",
-  description: "Watch the latest video news clips from Glaj News.",
-  path: "/videos",
-  section: "Video",
-});
+export const metadata: Metadata = { title: "Video Clips" };
 
 export default async function VideosPage() {
-  const data = await PostController.videos();
+  const data = await VideoController.getPage();
   return <VideoGalleryView data={data} />;
 }

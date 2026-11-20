@@ -1,14 +1,10 @@
-import { AdminShell } from "@/components/admin-shell/AdminShell";
+import type { Metadata } from "next";
+import { DashboardController, type ListQuery } from "@/controllers/dashboard.controller";
 import { SupportView } from "@/components/support-view/SupportView";
-import { MessageController } from "@/controllers/message.controller";
 
-export const dynamic = "force-dynamic";
+export const metadata: Metadata = { title: "Support" };
 
-export default async function SupportPage() {
-  const messages = await MessageController.list();
-  return (
-    <AdminShell>
-      <SupportView messages={messages} />
-    </AdminShell>
-  );
+export default async function SupportPage({ searchParams }: { searchParams: Promise<ListQuery> }) {
+  const data = await DashboardController.getMessages(await searchParams);
+  return <SupportView data={data} />;
 }

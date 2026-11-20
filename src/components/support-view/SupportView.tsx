@@ -1,72 +1,45 @@
-"use client";
+import { AdminPagination } from "@/components/admin-pagination/AdminPagination";
+import { AdminSection } from "@/components/admin-section/AdminSection";
+import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
+import { MessageActions } from "@/components/message-actions/MessageActions";
+import { TableToolbar } from "@/components/table-toolbar/TableToolbar";
+import type { MessagesPagePayload } from "@/models/page.dto";
+import type { MessageSummary } from "@/models/message.dto";
+import { formatDateTime } from "@/utils/time";
 
-import { useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
-import type { MessageView } from "@/models/message.model";
-import { AdminList } from "@/components/admin-list/AdminList";
-import { Pagination } from "@/components/pagination/Pagination";
-import { formatStamp } from "@/utils/time";
+type SupportViewProps = { data: MessagesPagePayload };
 
-const PAGE_SIZE = 20;
+const columns: DataTableColumn<MessageSummary>[] = [
+  { key: "sn", header: "S/N", render: (_row, index) => index + 1 },
+  { key: "date", header: "Date", hideOnMobile: true, render: (row) => formatDateTime(row.createdAt) },
+  { key: "name", header: "Sender", render: (row) => row.name },
+  {
+    key: "contact",
+    header: "Contact",
+    hideOnMobile: true,
+    render: (row) => (
+      <div>
+        <div>{row.email}</div>
+        <div>{row.phone}</div>
+      </div>
+    ),
+  },
+  { key: "message", header: "Message", render: (row) => <p className="m-0 min-w-[12rem] whitespace-pre-wrap">{row.message}</p> },
+  { key: "status", header: "Status", render: (row) => (row.isSeen ? "Read" : "unRead") },
+  { key: "actions", header: "Action", render: (row) => <MessageActions messageId={row.id} isSeen={row.isSeen} /> },
+];
 
-export function SupportView({ messages }: { messages: MessageView[] }) {
-  const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const filtered = useMemo(() => messages.filter((item) => item.name.toLowerCase().includes(search.toLowerCase())), [messages, search]);
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const records = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  const remove = async (id: string) => {
-    if (!window.confirm("Are you sure you want to delete this message?")) return;
-    const response = await fetch(`/api/messages/${id}`, { method: "DELETE" });
-    const data = await response.json();
-    if (!response.ok) {
-      window.alert(data.message || "Could not delete the message.");
-      return;
-    }
-    window.alert("successful");
-    router.refresh();
-  };
-
+export function SupportView({ data }: SupportViewProps) {
   return (
-    <AdminList title="Message Register" count={messages.length} countLabel="Message" search={search} onSearch={(value) => { setSearch(value); setPage(1); }} placeholder="Search by Name">
-      <table className="w-full border-separate border-spacing-0">
-        <thead>
-          <tr>
-            {["S/N", "Date", "message", "Sender Name", "Status", "Delete"].map((heading) => (
-              <th key={heading} className="border-b-2 border-[#eb9486] bg-[#f9f8f8] p-3 text-left">
-                {heading}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {records.length === 0 ? (
-            <tr>
-              <td className="p-3" colSpan={6}>
-                No Data Found
-              </td>
-            </tr>
-          ) : (
-            records.map((item, index) => (
-              <tr key={item.id} className="odd:bg-[#ece9e9]">
-                <td className="border-b border-gray-200 p-3">{(page - 1) * PAGE_SIZE + index + 1}</td>
-                <td className="border-b border-gray-200 p-3">{formatStamp(item.createdAt)}</td>
-                <td className="border-b border-gray-200 p-3">{item.message}</td>
-                <td className="border-b border-gray-200 p-3">{item.name}</td>
-                <td className="border-b border-gray-200 p-3">{item.is_seen ? "Read" : "unRead"}</td>
-                <td className="border-b border-gray-200 p-3">
-                  <button type="button" className="rounded bg-green-700 px-3 py-1 text-white" onClick={() => remove(item.id)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-      <Pagination page={page} pages={pages} onPage={setPage} />
-    </AdminList>
+    <AdminSection title="Message Register">
+      <TableToolbar countLabel={`${data.total} Message`} query={data.query} placeholder="Search by name, email or message" />
+      <DataTable
+        columns={columns}
+        rows={data.items}
+        rowKey={(row) => row.id}
+        startIndex={(data.page - 1) * data.pageSize}
+      />
+      <AdminPagination basePath="/auth/dashboard/support" page={data.page} pageCount={data.pageCount} query={data.query} />
+    </AdminSection>
   );
 }

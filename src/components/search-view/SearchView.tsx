@@ -1,18 +1,22 @@
-import type { PostView } from "@/models/post.model";
 import { EmptyState } from "@/components/empty-state/EmptyState";
 import { NewsCard } from "@/components/news-card/NewsCard";
 import { SiteShell } from "@/components/site-shell/SiteShell";
+import type { SearchPayload } from "@/models/page.dto";
 
-export function SearchView({ term, posts }: { term: string; posts: PostView[] }) {
+type SearchViewProps = { data: SearchPayload };
+
+export function SearchView({ data }: SearchViewProps) {
+  const heading = `Your searched for : ${data.term}`;
+
   return (
-    <SiteShell showFooter={false}>
-      {posts.length === 0 ? (
-        <EmptyState title={`Your seached for : ${term}`} detail="Click the button below to view more news." />
+    <SiteShell withFooter={false}>
+      {data.posts.length === 0 ? (
+        <EmptyState title={heading} />
       ) : (
         <>
-          <h2 className="px-4 pt-4 text-[1.3rem] underline">Your seached for : {term}</h2>
-          <div className="m-3 grid grid-cols-1 gap-5 min-[601px]:grid-cols-2 min-[801px]:grid-cols-4">
-            {posts.map((post) => (
+          <h2 className="pb-2 pl-4 pt-4 text-[1.3rem] underline">{heading}</h2>
+          <div className="mx-3 my-8 grid grid-cols-1 gap-5 min-[601px]:grid-cols-2 min-[801px]:grid-cols-4">
+            {data.posts.map((post) => (
               <NewsCard key={post.id} post={post} />
             ))}
           </div>

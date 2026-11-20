@@ -1,12 +1,10 @@
+import { randomBytes } from "node:crypto";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import bcrypt from "bcryptjs";
 import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
-
-const EMAIL = "superadmin@glajnews.com";
-const PASSWORD = "GlajSuper#2025";
 
 type LegacyPost = {
   id: string;
@@ -24,93 +22,58 @@ type LegacyPost = {
   createdAt: string;
 };
 
-function loadPosts(): LegacyPost[] {
-  const file = path.join(process.cwd(), "prisma", "data", "legacy-posts.json");
-  return JSON.parse(readFileSync(file, "utf8")) as LegacyPost[];
-}
+async function seedSuperAdmin() {
+  const email = (process.env.SEED_ADMIN_EMAIL ?? "superadmin@glajnews.com").toLowerCase();
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  if (!password || password.length < 8) {
+    throw new Error("Set SEED_ADMIN_PASSWORD (at least 8 characters) in .env before seeding.");
+  }
 
-async function seedAdmin() {
-  const password = await bcrypt.hash(PASSWORD, 10);
+  const hash = await bcrypt.hash(password, 10);
   await prisma.user.upsert({
-    where: { email: EMAIL },
-    update: {
-      password,
-      active: true,
-      permission: "super_admin",
-      firstname: "Super",
-      lastname: "Admin",
-    },
+    where: { email },
+    update: { password: hash, active: true, permission: "super_admin" },
     create: {
-      id: "superadmin-glaj-news",
+      id: randomBytes(18).toString("base64url"),
       firstname: "Super",
       lastname: "Admin",
-      email: EMAIL,
+      email,
       phone: "+2340000000000",
-      password,
+      password: hash,
       active: true,
       permission: "super_admin",
       wallet: 0,
       noBplog: 0,
     },
   });
+  console.log(`Super admin ready: ${email}`);
 }
 
 async function seedPosts() {
-  const posts = loadPosts();
+  const file = path.join(process.cwd(), "prisma", "data", "legacy-posts.json");
+  const posts = JSON.parse(readFileSync(file, "utf8")) as LegacyPost[];
+
+  let created = 0;
   const size = 50;
-  for (let index = 0; index < posts.length; index += size) {
-    const batch = posts.slice(index, index + size);
-    await prisma.$transaction(
-      batch.map((post) =>
-        prisma.post.upsert({
-          where: { id: post.id },
-          update: {
-            title: post.title,
-            content: post.content,
-            imageUrl: post.imageUrl,
-            publishBy: post.publishBy,
-            category: post.category,
-            blogType: post.blogType,
-            fileType: post.fileType,
-            blogId: post.blogId,
-            isEyeWitness: post.isEyeWitness,
-            isActive: post.isActive,
-            isApproved: post.isApproved,
-            createdAt: new Date(post.createdAt),
-          },
-          create: {
-            id: post.id,
-            title: post.title,
-            content: post.content,
-            imageUrl: post.imageUrl,
-            publishBy: post.publishBy,
-            category: post.category,
-            blogType: post.blogType,
-            fileType: post.fileType,
-            blogId: post.blogId,
-            isEyeWitness: post.isEyeWitness,
-            isActive: post.isActive,
-            isApproved: post.isApproved,
-            createdAt: new Date(post.createdAt),
-          },
-        }),
-      ),
-    );
-    console.log(`Saved ${Math.min(index + size, posts.length)} of ${posts.length} posts`);
+  for (let i = 0; i < posts.length; i += size) {
+    const batch = posts.slice(i, i + size).map((post) => ({
+      ...post,
+      createdAt: new Date(post.createdAt),
+    }));
+    const result = await prisma.post.createMany({ data: batch, skipDuplicates: true });
+    created += result.count;
   }
+  console.log(`Posts: ${created} added, ${posts.length - created} already existed.`);
 }
 
 async function main() {
-  await seedAdmin();
-  console.log(`Super admin ready: ${EMAIL}`);
+  await seedSuperAdmin();
   await seedPosts();
 }
 
 main()
   .catch((error) => {
     console.error(error);
-    process.exit(1);
+    process.exitCode = 1;
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .finally(() => prisma.$disconnect());

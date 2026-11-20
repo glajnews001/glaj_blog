@@ -1,14 +1,18 @@
+import type { ReactNode } from "react";
 import { Footer } from "@/components/footer/Footer";
 import { Navbar } from "@/components/navbar/Navbar";
 import { TopBar } from "@/components/top-bar/TopBar";
 
-export function SiteShell({ children, showFooter = true }: { children: React.ReactNode; showFooter?: boolean }) {
+type SiteShellProps = { children: ReactNode; withFooter?: boolean };
+
+/** Public-site frame: top bar, navigation, page content and footer. */
+export function SiteShell({ children, withFooter = true }: SiteShellProps) {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="flex min-h-screen flex-col">
       <TopBar />
       <Navbar />
-      <main>{children}</main>
-      {showFooter ? <Footer /> : null}
+      <main className="flex-1">{children}</main>
+      {withFooter && <Footer />}
     </div>
   );
 }

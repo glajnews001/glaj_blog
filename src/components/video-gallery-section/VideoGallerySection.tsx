@@ -1,14 +1,15 @@
-import type { PostView } from "@/models/post.model";
-import { VideoClip } from "@/components/video-clip/VideoClip";
+import { VideoClipCard } from "@/components/video-clip-card/VideoClipCard";
+import type { PostSummary } from "@/models/post.dto";
 
-export function VideoGallerySection({ title, posts }: { title: string; posts: PostView[] }) {
+type VideoGallerySectionProps = { title: string; videos: PostSummary[] };
+
+export function VideoGallerySection({ title, videos }: VideoGallerySectionProps) {
   return (
-    <section className="mx-4 my-4 md:mx-8">
-      <div className="mb-4 rounded-[10px] bg-[#01017a] px-4 py-4 text-[1.3rem] text-white capitalize">{title}</div>
-      {posts.length === 0 ? <p className="text-sm text-gray-500">No clips in this section yet.</p> : null}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {posts.map((post) => (
-          <VideoClip key={`${title}-${post.id}`} post={post} />
+    <section className="mx-4 my-4 tablet:mx-8">
+      <h2 className="mb-4 rounded-[10px] bg-navy p-4 text-[1.3rem] font-medium capitalize text-white">{title}</h2>
+      <div className="grid grid-cols-1 gap-2.5 tablet:grid-cols-2 desktop:grid-cols-3 wide:grid-cols-4">
+        {videos.map((video) => (
+          <VideoClipCard key={video.id} post={video} />
         ))}
       </div>
     </section>

@@ -1,16 +1,16 @@
 {
   "name": "glaj-news",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "prisma db seed"
-  },
-  "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "typecheck": "tsc --noEmit",
+    "db:push": "prisma db push",
+    "db:seed": "tsx --env-file=.env prisma/seed.ts",
+    "images:migrate": "tsx --env-file=.env scripts/migrate-images.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.0",
@@ -19,18 +19,19 @@
     "date-fns": "^4.4.0",
     "jose": "^6.2.18",
     "next": "16.4.6",
+    "quill": "^2.0.3",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-icons": "^5.7.0",
-    "recharts": "^3.11.0"
+    "recharts": "^3.11.0",
+    "sanitize-html": "^2.18.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.5",
-    "@tailwindcss/turbopack": "4.3.3",
-    "@types/bcryptjs": "^2.4.6",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/sanitize-html": "^2.16.2",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "postcss": "^8.5.33",

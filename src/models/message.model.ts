@@ -1,34 +1,48 @@
-export type MessageRecord = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-  blogId: string;
-  isSeen: boolean;
-  createdAt: Date;
-};
+import { Prisma, type Message } from "@prisma/client";
+import { db } from "@/models/db";
 
-export type MessageView = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  message: string;
-  blogid: string;
-  is_seen: boolean;
-  createdAt: string;
-};
+export type MessageRecord = Message;
 
-export function toMessageView(message: MessageRecord): MessageView {
+function buildWhere(search?: string): Prisma.MessageWhereInput {
+  if (!search) return {};
   return {
-    id: message.id,
-    name: message.name,
-    email: message.email,
-    phone: message.phone,
-    message: message.message,
-    blogid: message.blogId,
-    is_seen: message.isSeen,
-    createdAt: message.createdAt.toISOString(),
+    OR: [
+      { name: { contains: search, mode: "insensitive" } },
+      { email: { contains: search, mode: "insensitive" } },
+      { message: { contains: search, mode: "insensitive" } },
+    ],
   };
 }
+
+export const MessageModel = {
+  create(data: Prisma.MessageCreateInput) {
+    return db.message.create({ data });
+  },
+
+  findMany(search: string | undefined, take: number, skip: number) {
+    return db.message.findMany({
+      where: buildWhere(search),
+      orderBy: { createdAt: "desc" },
+      take,
+      skip,
+    });
+  },
+
+  count(search?: string) {
+    return db.message.count({ where: buildWhere(search) });
+  },
+
+  countUnread() {
+    return db.message.count({ where: { isSeen: false } });
+  },
+
+  async markSeen(id: string) {
+    const result = await db.message.updateMany({ where: { id }, data: { isSeen: true } });
+    return result.count > 0;
+  },
+
+  async remove(id: string) {
+    const result = await db.message.deleteMany({ where: { id } });
+    return result.count > 0;
+  },
+};

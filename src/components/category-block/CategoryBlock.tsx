@@ -1,19 +1,24 @@
 import Link from "next/link";
-import type { PostView } from "@/models/post.model";
 import { SectionHeading } from "@/components/section-heading/SectionHeading";
 import { StoryRow } from "@/components/story-row/StoryRow";
+import type { PostSummary } from "@/models/post.dto";
 
-export function CategoryBlock({ title, href, posts }: { title: string; href: string; posts: PostView[] }) {
+type CategoryBlockProps = { title: string; href: string; posts: PostSummary[] };
+
+/** A home-page block: heading, up to 12 stories and a "More ..." button. */
+export function CategoryBlock({ title, href, posts }: CategoryBlockProps) {
   return (
-    <section className="trending-panel mb-8 p-4">
+    <div className="min-w-0 p-4 pb-12">
       <SectionHeading title={title} />
-      {posts.length === 0 ? <p className="py-3 text-sm text-gray-500">No stories in this section yet.</p> : null}
       {posts.map((post) => (
-        <StoryRow key={post.id} post={post} excerptLength={200} prominent />
+        <StoryRow key={post.id} post={post} variant="excerpt" excerptLength={200} />
       ))}
-      <Link href={href} className="mt-4 inline-block rounded bg-[#01017a]/80 px-4 py-2 text-white">
+      <Link
+        href={href}
+        className="my-4 inline-block rounded-[5px] bg-navy-soft px-4 py-[0.4rem] text-center text-white no-underline hover:bg-navy"
+      >
         More ...
       </Link>
-    </section>
+    </div>
   );
 }

@@ -1,16 +1,28 @@
-"use client";
+import Link from "next/link";
 
-import { useRouter } from "next/navigation";
+type EmptyStateProps = {
+  title: string;
+  message?: string;
+  actionLabel?: string;
+  href?: string;
+};
 
-export function EmptyState({ title, detail }: { title: string; detail: string }) {
-  const router = useRouter();
+export function EmptyState({
+  title,
+  message = "Click the button below to view more news.",
+  actionLabel = "View More News",
+  href = "/",
+}: EmptyStateProps) {
   return (
-    <div className="mx-auto my-5 max-w-md rounded border border-[#ccc] bg-[#f5f5f5] p-5 text-center">
-      <h2 className="text-xl text-[#333]">{title}</h2>
-      <p className="my-3 text-[#666]">{detail}</p>
-      <button type="button" onClick={() => router.push("/")} className="rounded bg-[#007bff] px-5 py-2 text-white hover:bg-[#0056b3]">
-        View More News
-      </button>
+    <div className="mx-auto my-5 max-w-[400px] rounded-[5px] border border-[#ccc] bg-[#f5f5f5] p-5 text-center">
+      <h2 className="text-[1.5rem] text-[#333]">{title}</h2>
+      <p className="text-[#666]">{message}</p>
+      <Link
+        href={href}
+        className="inline-block rounded-[5px] bg-[#007bff] px-5 py-2.5 text-white no-underline transition-colors hover:bg-[#0056b3]"
+      >
+        {actionLabel}
+      </Link>
     </div>
   );
 }

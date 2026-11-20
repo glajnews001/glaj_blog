@@ -1,30 +1,55 @@
-"use client";
-
-import { FaFacebook, FaLinkedin, FaPinterest, FaReddit, FaTelegram, FaWhatsapp } from "react-icons/fa";
+import {
+  FaFacebookF,
+  FaLinkedinIn,
+  FaPinterestP,
+  FaRedditAlien,
+  FaTelegramPlane,
+  FaWhatsapp,
+} from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
+import { ShareButton } from "@/components/share-button/ShareButton";
+import { SITE } from "@/utils/constants";
 
-export function ShareBar({ url, title, image }: { url: string; title: string; image?: string }) {
-  const encoded = encodeURIComponent(url);
-  const text = encodeURIComponent(title);
-  const links = [
-    { href: `https://www.facebook.com/sharer/sharer.php?u=${encoded}`, label: "Facebook", icon: <FaFacebook /> },
-    { href: `https://pinterest.com/pin/create/button/?url=${encoded}&media=${encodeURIComponent(image || "")}&description=${text}`, label: "Pinterest", icon: <FaPinterest /> },
-    { href: `https://www.reddit.com/submit?url=${encoded}&title=${text}`, label: "Reddit", icon: <FaReddit /> },
-    { href: `https://wa.me/?text=${encodeURIComponent(`${title} - Check out this news on Glaj News: ${url}`)}`, label: "WhatsApp", icon: <FaWhatsapp /> },
-    { href: `https://twitter.com/intent/tweet?url=${encoded}&text=${text}`, label: "X", icon: <FaXTwitter /> },
-    { href: `https://t.me/share/url?url=${encoded}&text=${text}`, label: "Telegram", icon: <FaTelegram /> },
-    { href: `https://www.linkedin.com/sharing/share-offsite/?url=${encoded}`, label: "LinkedIn", icon: <FaLinkedin /> },
-  ];
+type ShareBarProps = { url: string; title: string; imageUrl?: string };
+
+export function ShareBar({ url, title, imageUrl }: ShareBarProps) {
+  const u = encodeURIComponent(url);
+  const t = encodeURIComponent(title);
+  const message = encodeURIComponent(`${title} - Check out this news on ${SITE.name}: ${url}`);
 
   return (
-    <div className="flex flex-wrap items-center justify-center gap-3 py-4">
-      <h2 className="pr-3 text-xl">Social Share :</h2>
-      <div className="flex flex-wrap gap-2">
-        {links.map((link) => (
-          <a key={link.label} href={link.href} target="_blank" rel="noreferrer" aria-label={link.label} className="flex h-8 w-8 items-center justify-center rounded-full bg-[#01017a] text-sm text-white">
-            {link.icon}
-          </a>
-        ))}
+    <div className="flex flex-wrap items-center justify-center gap-3 px-4 py-4">
+      <h2 className="m-0 text-2xl">Social Share :</h2>
+      <div className="flex flex-wrap gap-2.5">
+        <ShareButton label="Facebook" color="#3b5998" href={`https://www.facebook.com/sharer/sharer.php?u=${u}`}>
+          <FaFacebookF />
+        </ShareButton>
+        <ShareButton
+          label="Pinterest"
+          color="#cb2027"
+          href={`https://pinterest.com/pin/create/button/?url=${u}&media=${encodeURIComponent(imageUrl ?? "")}&description=${t}`}
+        >
+          <FaPinterestP />
+        </ShareButton>
+        <ShareButton label="Reddit" color="#ff4500" href={`https://www.reddit.com/submit?url=${u}&title=${t}`}>
+          <FaRedditAlien />
+        </ShareButton>
+        <ShareButton label="WhatsApp" color="#25d366" href={`https://wa.me/?text=${message}`}>
+          <FaWhatsapp />
+        </ShareButton>
+        <ShareButton label="X" color="#000" href={`https://twitter.com/intent/tweet?url=${u}&text=${t}`}>
+          <FaXTwitter />
+        </ShareButton>
+        <ShareButton label="Telegram" color="#0088cc" href={`https://t.me/share/url?url=${u}&text=${t}`}>
+          <FaTelegramPlane />
+        </ShareButton>
+        <ShareButton
+          label="LinkedIn"
+          color="#007fb1"
+          href={`https://www.linkedin.com/sharing/share-offsite/?url=${u}`}
+        >
+          <FaLinkedinIn />
+        </ShareButton>
       </div>
     </div>
   );

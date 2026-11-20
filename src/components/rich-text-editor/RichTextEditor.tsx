@@ -1,49 +1,72 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type Quill from "quill";
+import "quill/dist/quill.snow.css";
 
-const actions = [
-  { command: "bold", label: "B" },
-  { command: "italic", label: "I" },
-  { command: "underline", label: "U" },
-  { command: "insertUnorderedList", label: "• List" },
-  { command: "insertOrderedList", label: "1. List" },
+type RichTextEditorProps = {
+  value: string;
+  onChange: (html: string) => void;
+  placeholder?: string;
+};
+
+const TOOLBAR = [
+  [{ header: [1, 2, 3, false] }],
+  ["bold", "italic", "underline", "strike"],
+  [{ list: "ordered" }, { list: "bullet" }],
+  [{ align: [] }],
+  ["blockquote", "link"],
+  ["clean"],
 ];
 
-export function RichTextEditor({ value, onChange }: { value: string; onChange: (html: string) => void }) {
-  const editor = useRef<HTMLDivElement>(null);
+/** Quill rich-text editor (the same editor family the original site used). */
+export function RichTextEditor({ value, onChange, placeholder = "Write the story..." }: RichTextEditorProps) {
+  const hostRef = useRef<HTMLDivElement>(null);
+  const quillRef = useRef<Quill | null>(null);
+  const onChangeRef = useRef(onChange);
 
   useEffect(() => {
-    if (editor.current && editor.current.innerHTML !== value) {
-      editor.current.innerHTML = value;
-    }
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    let cancelled = false;
+    const host = hostRef.current;
+    if (!host) return;
+
+    (async () => {
+      const { default: QuillClass } = await import("quill");
+      if (cancelled) return;
+      const container = document.createElement("div");
+      host.appendChild(container);
+      const quill = new QuillClass(container, {
+        theme: "snow",
+        placeholder,
+        modules: { toolbar: TOOLBAR },
+      });
+      quill.on("text-change", () => {
+        const empty = quill.getText().trim().length === 0 && !quill.root.querySelector("img");
+        onChangeRef.current(empty ? "" : quill.root.innerHTML);
+      });
+      quillRef.current = quill;
+    })();
+
+    return () => {
+      cancelled = true;
+      quillRef.current = null;
+      host.innerHTML = "";
+    };
+  }, [placeholder]);
+
+  // Allow the parent to clear the editor after a successful submit.
+  useEffect(() => {
+    const quill = quillRef.current;
+    if (quill && value === "" && quill.getLength() > 1) quill.setText("");
   }, [value]);
 
   return (
-    <div className="mt-1 mb-4">
-      <div className="flex flex-wrap gap-1 rounded-t border border-b-0 border-[#ccc] bg-[#f7f7f7] p-2">
-        {actions.map((action) => (
-          <button
-            key={action.command}
-            type="button"
-            className="rounded border border-[#ccc] bg-white px-2 py-1 text-sm"
-            onMouseDown={(event) => {
-              event.preventDefault();
-              document.execCommand(action.command);
-              onChange(editor.current?.innerHTML || "");
-            }}
-          >
-            {action.label}
-          </button>
-        ))}
-      </div>
-      <div
-        ref={editor}
-        contentEditable
-        data-placeholder="Write the story..."
-        className="rich-editor min-h-[150px] rounded-b border border-[#ccc] bg-white p-3 text-black outline-none"
-        onInput={(event) => onChange(event.currentTarget.innerHTML)}
-      />
+    <div className="mb-4 bg-white [&_.ql-container]:min-h-[180px] [&_.ql-editor]:min-h-[180px] [&_.ql-editor]:text-base">
+      <div ref={hostRef} />
     </div>
   );
 }

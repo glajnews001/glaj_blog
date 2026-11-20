@@ -1,43 +1,38 @@
-import { TiSocialFacebook, TiSocialInstagram, TiSocialLinkedin } from "react-icons/ti";
-import { CATEGORIES, SOCIAL_LINKS } from "@/utils/constants";
 import { FooterColumn } from "@/components/footer-column/FooterColumn";
+import { SocialLinks } from "@/components/social-links/SocialLinks";
 
-const newsLinks = CATEGORIES.filter((item) => !["article", "career"].includes(item.key));
-const opinionLinks = CATEGORIES.filter((item) => ["eye-witness", "article", "career"].includes(item.key));
+const newsLinks = [
+  { href: "/category/politics", label: "Politics" },
+  { href: "/category/business", label: "Business" },
+  { href: "/category/sport", label: "Sport" },
+  { href: "/category/entertainment", label: "Entertainment" },
+  { href: "/category/eye-witness", label: "Eye-witness" },
+  { href: "/category/foreign", label: "Foreign" },
+  { href: "/category/education", label: "Education" },
+  { href: "/category/extra", label: "Extra" },
+];
+
+const helpLinks = [
+  { href: "/contact", label: "Contact Us" },
+  { href: "/contact", label: "Support" },
+];
+
+const opinionLinks = [
+  { href: "/category/eye-witness", label: "Eye-witness" },
+  { href: "/category/article", label: "Article" },
+  { href: "/category/career", label: "Career" },
+];
 
 export function Footer() {
   return (
-    <footer className="bg-[#151515] px-4 py-20 text-white">
-      <div className="mx-auto flex max-w-6xl flex-wrap">
-        <FooterColumn title="News" links={newsLinks.map((item) => ({ href: item.href, label: item.title }))} />
-        <FooterColumn
-          title="get help"
-          links={[
-            { href: "/contact", label: "Contact Us" },
-            { href: "/contact", label: "Support" },
-          ]}
-        />
-        <FooterColumn title="Opinion" links={opinionLinks.map((item) => ({ href: item.href, label: item.title }))} />
-        <div className="mb-8 w-full px-4 sm:w-1/2 lg:w-1/4">
-          <h4 className="relative mb-8 text-lg font-medium capitalize">
-            follow us
-            <span className="absolute bottom-[-10px] left-0 h-0.5 w-12 bg-[#E91E63]" />
-          </h4>
-          <div className="flex gap-3 text-xl">
-            <a href={SOCIAL_LINKS.facebook} className="flex h-10 w-10 items-center justify-center rounded-full text-white hover:text-[goldenrod]" aria-label="Facebook">
-              <TiSocialFacebook />
-            </a>
-            <a href={SOCIAL_LINKS.x} className="flex h-10 w-10 items-center justify-center" aria-label="X">
-              <img src="/image/x.svg" alt="" className="h-5 w-5" />
-            </a>
-            <a href={SOCIAL_LINKS.instagram} className="flex h-10 w-10 items-center justify-center rounded-full text-white hover:text-[goldenrod]" aria-label="Instagram">
-              <TiSocialInstagram />
-            </a>
-            <a href={SOCIAL_LINKS.linkedin} className="flex h-10 w-10 items-center justify-center rounded-full text-white hover:text-[goldenrod]" aria-label="LinkedIn">
-              <TiSocialLinkedin />
-            </a>
-          </div>
-        </div>
+    <footer className="bg-footer py-12 tablet:py-20">
+      <div className="mx-auto flex flex-wrap">
+        <FooterColumn title="News" links={newsLinks} />
+        <FooterColumn title="Get help" links={helpLinks} />
+        <FooterColumn title="Opinion" links={opinionLinks} />
+        <FooterColumn title="Follow us">
+          <SocialLinks variant="footer" className="flex-wrap" />
+        </FooterColumn>
       </div>
     </footer>
   );

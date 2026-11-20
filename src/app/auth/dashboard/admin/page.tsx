@@ -1,14 +1,7 @@
-import { AdminShell } from "@/components/admin-shell/AdminShell";
-import { DashboardView } from "@/components/dashboard-view/DashboardView";
 import { DashboardController } from "@/controllers/dashboard.controller";
-
-export const dynamic = "force-dynamic";
+import { DashboardView } from "@/components/dashboard-view/DashboardView";
 
 export default async function AdminDashboardPage() {
-  const stats = await DashboardController.stats();
-  return (
-    <AdminShell>
-      <DashboardView stats={stats} />
-    </AdminShell>
-  );
+  const data = await DashboardController.getOverview();
+  return <DashboardView data={data} />;
 }

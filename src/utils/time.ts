@@ -1,39 +1,35 @@
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 
-export function getTimeAgo(timestamp?: string | Date | null) {
-  if (!timestamp) return "";
-  const targetDate = new Date(timestamp);
-  if (Number.isNaN(targetDate.getTime())) return "";
+const DAY = 24 * 60 * 60 * 1000;
 
-  const differenceInDays = Math.floor((Date.now() - targetDate.getTime()) / (24 * 60 * 60 * 1000));
+/** "5 minutes ago", "2 weeks ago", "3 months ago" - same wording as the original site. */
+export function getTimeAgo(value: string | Date | null | undefined): string {
+  if (!value) return "";
+  const target = new Date(value);
+  if (Number.isNaN(target.getTime())) return "";
 
-  if (differenceInDays < 7) {
-    return formatDistanceToNow(targetDate, { addSuffix: true });
+  const days = Math.floor((Date.now() - target.getTime()) / DAY);
+  if (days < 7) return formatDistanceToNow(target, { addSuffix: true });
+  if (days < 30) {
+    const weeks = Math.floor(days / 7);
+    return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
   }
-  if (differenceInDays < 30) {
-    const weeksAgo = Math.floor(differenceInDays / 7);
-    return `${weeksAgo} ${weeksAgo === 1 ? "week" : "weeks"} ago`;
+  if (days < 365) {
+    const months = Math.floor(days / 30);
+    return `${months} ${months === 1 ? "month" : "months"} ago`;
   }
-  if (differenceInDays < 365) {
-    const monthsAgo = Math.floor(differenceInDays / 30);
-    return `${monthsAgo} ${monthsAgo === 1 ? "month" : "months"} ago`;
-  }
-  const yearsAgo = Math.floor(differenceInDays / 365);
-  return `${yearsAgo} ${yearsAgo === 1 ? "year" : "years"} ago`;
+  const years = Math.floor(days / 365);
+  return `${years} ${years === 1 ? "year" : "years"} ago`;
 }
 
-export function formatStamp(timestamp?: string | Date | null) {
-  if (!timestamp) return "";
-  const date = new Date(timestamp);
-  if (Number.isNaN(date.getTime())) return "";
-  return format(date, "dd/MM/yyyy hh:mm a");
+/** "Friday, November 20, 2026" */
+export function formatLongDate(date: Date = new Date()): string {
+  return format(date, "EEEE, MMMM d, yyyy");
 }
 
-export function formatLongDate(date = new Date()) {
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+/** "20/11/2026 04:30 AM" */
+export function formatDateTime(value: string | Date | null | undefined): string {
+  if (!value) return "";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "" : format(date, "dd/MM/yyyy hh:mm a");
 }

@@ -1,51 +1,33 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { ArticleController } from "@/controllers/article.controller";
 import { ArticleView } from "@/components/article-view/ArticleView";
-import { JsonLd } from "@/components/json-ld/JsonLd";
-import { PostController } from "@/controllers/post.controller";
-import { categoryLabel, articleJsonLd, breadcrumbJsonLd, metaDescription, pageMetadata, absoluteUrl } from "@/utils/seo";
+import { PostService } from "@/services/post.service";
+import { excerptFromHtml } from "@/utils/html";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
-type ArticlePageProps = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }> };
 
-export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const data = await PostController.article(id);
-  const post = data.post;
-  if (!post) {
-    return pageMetadata({ title: "Story not found", description: "This story is no longer available.", path: `/posts/${id}`, index: false });
-  }
-  return pageMetadata({
+  const post = await PostService.detail(id);
+  if (!post) return { title: "Post not found" };
+
+  const description = excerptFromHtml(post.content, 160);
+  const images = post.fileType === "image" && post.imageUrl ? [post.imageUrl] : undefined;
+  return {
     title: post.title,
-    description: metaDescription(post.content),
-    path: `/posts/${post.id}`,
-    image: post.imageUrl,
-    type: "article",
-    publishedTime: post.createdAt,
-    authors: [post.PublishBy || "Glaj News"],
-    section: categoryLabel(post.category),
-  });
+    description,
+    alternates: { canonical: `/posts/${post.id}` },
+    openGraph: { type: "article", title: post.title, description, url: `/posts/${post.id}`, images },
+    twitter: { card: "summary_large_image", title: post.title, description, images },
+  };
 }
 
-export default async function ArticlePage({ params }: ArticlePageProps) {
+export default async function PostPage({ params }: Props) {
   const { id } = await params;
-  const data = await PostController.article(id);
-  const post = data.post;
-  return (
-    <>
-      {post ? (
-        <JsonLd
-          data={[
-            articleJsonLd(post),
-            breadcrumbJsonLd([
-              { name: "Home", path: "/" },
-              { name: categoryLabel(post.category), path: `/category/${post.category}` },
-              { name: post.title, path: `/posts/${post.id}` },
-            ]),
-          ]}
-        />
-      ) : null}
-      <ArticleView data={data} url={absoluteUrl(`/posts/${id}`)} />
-    </>
-  );
+  const data = await ArticleController.getPage(id);
+  if (!data) notFound();
+  return <ArticleView data={data} />;
 }

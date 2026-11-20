@@ -1,59 +1,45 @@
-"use client";
+import { AdminPagination } from "@/components/admin-pagination/AdminPagination";
+import { AdminSection } from "@/components/admin-section/AdminSection";
+import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
+import { TableToolbar } from "@/components/table-toolbar/TableToolbar";
+import { UserStatusButton } from "@/components/user-status-button/UserStatusButton";
+import type { UsersPagePayload } from "@/models/page.dto";
+import type { UserSummary } from "@/models/user.dto";
+import { ROLE } from "@/utils/constants";
+import { formatDateTime } from "@/utils/time";
 
-import { useMemo, useState } from "react";
-import type { UserView } from "@/models/user.model";
-import { AdminList } from "@/components/admin-list/AdminList";
-import { Pagination } from "@/components/pagination/Pagination";
-import { formatStamp } from "@/utils/time";
+type ViewUsersViewProps = { data: UsersPagePayload };
 
-const PAGE_SIZE = 20;
+export function ViewUsersView({ data }: ViewUsersViewProps) {
+  const columns: DataTableColumn<UserSummary>[] = [
+    { key: "sn", header: "S/N", render: (_row, index) => index + 1 },
+    { key: "created", header: "Created", hideOnMobile: true, render: (row) => formatDateTime(row.created) },
+    { key: "name", header: "Name", render: (row) => `${row.firstname} ${row.lastname}` },
+    { key: "email", header: "Email", hideOnMobile: true, render: (row) => row.email },
+    { key: "phone", header: "Phone", hideOnMobile: true, render: (row) => row.phone },
+    { key: "role", header: "Role", hideOnMobile: true, render: (row) => row.permission },
+    { key: "status", header: "Status", render: (row) => (row.active ? "active" : "Suspended") },
+  ];
 
-export function ViewUsersView({ users }: { users: UserView[] }) {
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const filtered = useMemo(() => {
-    const needle = search.toLowerCase();
-    return users.filter((user) => user.firstname.toLowerCase().includes(needle) || user.lastname.toLowerCase().includes(needle) || user.phone.toLowerCase().includes(needle));
-  }, [search, users]);
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const records = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  if (data.canManage) {
+    columns.push({
+      key: "actions",
+      header: "Action",
+      render: (row) =>
+        row.permission === ROLE.SUPER_ADMIN ? "-" : <UserStatusButton userId={row.id} active={row.active} />,
+    });
+  }
 
   return (
-    <AdminList title="User Register" count={users.length} countLabel="Users" search={search} onSearch={(value) => { setSearch(value); setPage(1); }} placeholder="Search by Name">
-      <table className="w-full border-separate border-spacing-0">
-        <thead>
-          <tr>
-            {["S/N", "Created", "Name", "Phone", "Role", "Status"].map((heading) => (
-              <th key={heading} className="border-b-2 border-[#eb9486] bg-[#f9f8f8] p-3 text-left">
-                {heading}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {records.length === 0 ? (
-            <tr>
-              <td className="p-3" colSpan={6}>
-                No Data Found
-              </td>
-            </tr>
-          ) : (
-            records.map((user, index) => (
-              <tr key={user.id} className="odd:bg-[#ece9e9]">
-                <td className="border-b border-gray-200 p-3">{(page - 1) * PAGE_SIZE + index + 1}</td>
-                <td className="border-b border-gray-200 p-3">{formatStamp(user.created)}</td>
-                <td className="border-b border-gray-200 p-3">
-                  {user.firstname} {user.lastname}
-                </td>
-                <td className="border-b border-gray-200 p-3">{user.phone}</td>
-                <td className="border-b border-gray-200 p-3">{user.permission}</td>
-                <td className="border-b border-gray-200 p-3">{user.active ? "active" : "Suspended"}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-      <Pagination page={page} pages={pages} onPage={setPage} />
-    </AdminList>
+    <AdminSection title="User Register">
+      <TableToolbar countLabel={`${data.total} Users`} query={data.query} placeholder="Search by name, email or phone" />
+      <DataTable
+        columns={columns}
+        rows={data.items}
+        rowKey={(row) => row.id}
+        startIndex={(data.page - 1) * data.pageSize}
+      />
+      <AdminPagination basePath="/auth/dashboard/viewuser" page={data.page} pageCount={data.pageCount} query={data.query} />
+    </AdminSection>
   );
 }

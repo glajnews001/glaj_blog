@@ -1,50 +1,51 @@
 import { v2 as cloudinary } from "cloudinary";
-import { MAX_UPLOAD_BYTES } from "@/utils/constants";
-import { httpError } from "@/utils/http";
+import { FILE_TYPE, UPLOAD_LIMITS } from "@/utils/constants";
+import { HttpError } from "@/utils/http";
 
-function configure() {
-  const cloud_name = process.env.CLOUDINARY_CLOUD_NAME;
-  const api_key = process.env.CLOUDINARY_API_KEY;
-  const api_secret = process.env.CLOUDINARY_API_SECRET;
-  if (!cloud_name || !api_key || !api_secret) {
-    throw httpError("Cloudinary is not configured. Add the cloud name, API key, and API secret.", 503);
+const FOLDER = "glaj-news";
+
+export type UploadSignature = {
+  cloudName: string;
+  apiKey: string;
+  timestamp: number;
+  folder: string;
+  signature: string;
+  resourceType: "image" | "video";
+  maxBytes: number;
+};
+
+function credentials() {
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new HttpError(500, "Cloudinary is not configured on the server.");
   }
-  cloudinary.config({ cloud_name, api_key, api_secret });
+  return { cloudName, apiKey, apiSecret };
 }
 
-export class MediaService {
-  static async upload(file: File, fileType: string) {
-    if (!file || file.size === 0) {
-      throw httpError("Upload a file before publishing.");
-    }
-    if (file.size > MAX_UPLOAD_BYTES) {
-      throw httpError("File size exceeds the 10 MB limit. Please choose a smaller file.");
-    }
-    if (fileType === "image" && file.type.startsWith("video/")) {
-      throw httpError("Wrong file selected. Choose an image, or switch the file type to video.");
-    }
-    if (fileType === "video" && file.type.startsWith("image/")) {
-      throw httpError("Wrong file selected. Choose a video, or switch the file type to image.");
-    }
+export const MediaService = {
+  cloudName: () => process.env.CLOUDINARY_CLOUD_NAME,
 
-    configure();
-    const bytes = Buffer.from(await file.arrayBuffer());
-    const resourceType = fileType === "video" ? "video" : "image";
-
-    const url = await new Promise<string>((resolve, reject) => {
-      const stream = cloudinary.uploader.upload_stream(
-        { folder: "glaj-news", resource_type: resourceType },
-        (error, result) => {
-          if (error || !result) {
-            reject(httpError(error?.message || "Cloudinary upload failed.", 502));
-            return;
-          }
-          resolve(result.secure_url);
-        },
-      );
-      stream.end(bytes);
-    });
-
-    return url;
-  }
-}
+  /**
+   * Signs a direct browser -> Cloudinary upload. Files never pass through our
+   * server, so large videos are not limited by serverless body-size limits.
+   */
+  sign(fileType: string): UploadSignature {
+    if (fileType !== FILE_TYPE.IMAGE && fileType !== FILE_TYPE.VIDEO) {
+      throw new HttpError(400, "File type must be image or video.");
+    }
+    const { cloudName, apiKey, apiSecret } = credentials();
+    const timestamp = Math.round(Date.now() / 1000);
+    const signature = cloudinary.utils.api_sign_request({ timestamp, folder: FOLDER }, apiSecret);
+    return {
+      cloudName,
+      apiKey,
+      timestamp,
+      folder: FOLDER,
+      signature,
+      resourceType: fileType,
+      maxBytes: fileType === FILE_TYPE.IMAGE ? UPLOAD_LIMITS.imageBytes : UPLOAD_LIMITS.videoBytes,
+    };
+  },
+};
