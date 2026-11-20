@@ -21,7 +21,7 @@ Flow: `page.tsx -> controller -> service -> model -> database`.
 npm install
 cp .env.example .env        # fill in the values
 npx prisma db push          # create tables (first time only)
-npm run db:seed             # super admin + legacy posts (safe to re-run)
+npm run db:seed             # super admin (safe to re-run)
 npm run dev
 ```
 
@@ -33,5 +33,4 @@ Set the first six in Vercel too.
 
 - Admin area: `/auth/dashboard/*` (proxy + controller checks). New registrations are inactive until a super admin activates them on the Users page.
 - Uploads go browser -> Cloudinary with a server-signed request (images 10MB, videos 100MB).
-- Legacy posts point at Firebase Storage, which Google has disabled (HTTP 402). Posts show a placeholder until you
-  upgrade that Firebase project to Blaze and run `npm run images:migrate` to copy the files into Cloudinary.
+- The old Firebase posts were removed to start fresh; an archive is kept in `prisma/data/legacy-posts.json`.

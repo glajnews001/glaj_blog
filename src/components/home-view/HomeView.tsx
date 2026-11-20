@@ -1,5 +1,6 @@
 import { AdSlot } from "@/components/ad-slot/AdSlot";
 import { CategoryBlock } from "@/components/category-block/CategoryBlock";
+import { EmptyState } from "@/components/empty-state/EmptyState";
 import { FeaturedPost } from "@/components/featured-post/FeaturedPost";
 import { HeroSection } from "@/components/hero-section/HeroSection";
 import { SectionHeading } from "@/components/section-heading/SectionHeading";
@@ -11,6 +12,16 @@ import { AD_SLOTS } from "@/utils/constants";
 type HomeViewProps = { data: HomePayload };
 
 export function HomeView({ data }: HomeViewProps) {
+  if (!data.featured && data.latest.length === 0 && data.trending.length === 0) {
+    return (
+      <SiteShell>
+        <div className="py-10">
+          <EmptyState title="No News Yet" message="Fresh stories are coming soon. Please check back shortly." actionLabel="Contact Us" href="/contact" />
+        </div>
+      </SiteShell>
+    );
+  }
+
   return (
     <SiteShell>
       <AdSlot slot={AD_SLOTS.homeTop} />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import logoMark from "@/assets/logo-mark.png";
 import { cn } from "@/utils/cn";
 import { optimizeImageUrl } from "@/utils/media";
 
@@ -35,7 +36,7 @@ export function SmartImage({ src, alt = "", width = 800, className, priority }: 
         className={cn("flex items-center justify-center overflow-hidden bg-[#e9ecef]", className)}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/image/logo1.png" alt="" className="max-h-[60%] w-auto max-w-[60%] object-contain opacity-30" />
+        <img src={logoMark.src} alt="" className="max-h-[60%] w-auto max-w-[60%] object-contain opacity-30" />
       </div>
     );
   }

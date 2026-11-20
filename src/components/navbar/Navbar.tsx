@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { AiOutlineClose, AiOutlineMenu } from "react-icons/ai";
+import logo from "@/assets/logo.png";
 import { NAV_CATEGORIES } from "@/utils/constants";
 import { cn } from "@/utils/cn";
 
@@ -28,7 +29,7 @@ export function Navbar() {
     >
       <Link href="/" onClick={close} className="shrink-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/image/logo.png" alt="Glaj News" className="ml-4 h-24 w-auto wide:ml-8" />
+        <img src={logo.src} alt="Glaj News" className="ml-4 h-24 w-auto wide:ml-8" />
       </Link>
 
       <button
