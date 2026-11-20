@@ -4,7 +4,9 @@ import { CATEGORIES, SITE_DESCRIPTION, SITE_NAME, SOCIAL_LINKS } from "@/utils/c
 import { stripHtml } from "@/utils/html";
 
 export function siteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "https://glajnews.com").replace(/\/$/, "");
+  const raw = (process.env.NEXT_PUBLIC_SITE_URL || "https://glajblog.vercel.app").trim().replace(/\/$/, "");
+  if (/^https?:\/\//i.test(raw)) return raw;
+  return `https://${raw}`;
 }
 
 export function absoluteUrl(path: string) {

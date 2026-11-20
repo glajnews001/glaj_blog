@@ -4,35 +4,53 @@ import { ArchiveService } from "@/services/archive.service";
 
 const order = { createdAt: "desc" as const };
 
+async function fromDbOrArchive<T>(load: () => Promise<T>, fallback: () => T): Promise<T> {
+  if (!hasDatabase()) return fallback();
+  try {
+    return await load();
+  } catch (error) {
+    console.error("[PostService] database read failed, using archive", error);
+    return fallback();
+  }
+}
+
 export class PostService {
   static async list(): Promise<PostView[]> {
-    if (!hasDatabase()) return ArchiveService.list();
-    const rows = await getPrisma().post.findMany({ orderBy: order });
-    return rows.map(toPostView);
+    return fromDbOrArchive(async () => {
+      const rows = await getPrisma().post.findMany({ orderBy: order });
+      if (rows.length === 0) return ArchiveService.list();
+      return rows.map(toPostView);
+    }, ArchiveService.list);
   }
 
   static async listByCategory(category: string): Promise<PostView[]> {
-    if (!hasDatabase()) return ArchiveService.listByCategory(category);
-    const rows = await getPrisma().post.findMany({
-      where: { category },
-      orderBy: order,
-    });
-    return rows.map(toPostView);
+    return fromDbOrArchive(async () => {
+      const rows = await getPrisma().post.findMany({
+        where: { category },
+        orderBy: order,
+      });
+      if (rows.length === 0) return ArchiveService.listByCategory(category);
+      return rows.map(toPostView);
+    }, () => ArchiveService.listByCategory(category));
   }
 
   static async listVideos(): Promise<PostView[]> {
-    if (!hasDatabase()) return ArchiveService.listVideos();
-    const rows = await getPrisma().post.findMany({
-      where: { fileType: "video" },
-      orderBy: order,
-    });
-    return rows.map(toPostView);
+    return fromDbOrArchive(async () => {
+      const rows = await getPrisma().post.findMany({
+        where: { fileType: "video" },
+        orderBy: order,
+      });
+      if (rows.length === 0) return ArchiveService.listVideos();
+      return rows.map(toPostView);
+    }, ArchiveService.listVideos);
   }
 
   static async getById(id: string): Promise<PostView | null> {
-    if (!hasDatabase()) return ArchiveService.getById(id);
-    const row = await getPrisma().post.findUnique({ where: { id } });
-    return row ? toPostView(row) : null;
+    return fromDbOrArchive(async () => {
+      const row = await getPrisma().post.findUnique({ where: { id } });
+      if (row) return toPostView(row);
+      return ArchiveService.getById(id);
+    }, () => ArchiveService.getById(id));
   }
 
   static async search(term: string): Promise<PostView[]> {
@@ -77,18 +95,21 @@ export class PostService {
   }
 
   static async count() {
-    if (!hasDatabase()) return ArchiveService.list().length;
-    return getPrisma().post.count();
+    return fromDbOrArchive(
+      () => getPrisma().post.count(),
+      () => ArchiveService.list().length,
+    );
   }
 
   static async countsByDay(days: number) {
-    if (!hasDatabase()) return ArchiveService.countsByDay(days);
-    const since = new Date();
-    since.setDate(since.getDate() - (days - 1));
-    since.setHours(0, 0, 0, 0);
-    return getPrisma().post.findMany({
-      where: { createdAt: { gte: since } },
-      select: { createdAt: true },
-    });
+    return fromDbOrArchive(async () => {
+      const since = new Date();
+      since.setDate(since.getDate() - (days - 1));
+      since.setHours(0, 0, 0, 0);
+      return getPrisma().post.findMany({
+        where: { createdAt: { gte: since } },
+        select: { createdAt: true },
+      });
+    }, () => ArchiveService.countsByDay(days));
   }
 }

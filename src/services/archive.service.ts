@@ -23,7 +23,14 @@ let cache: PostView[] | null = null;
 function load(): PostView[] {
   if (cache) return cache;
   const file = path.join(process.cwd(), "prisma", "data", "legacy-posts.json");
-  const rows = JSON.parse(readFileSync(file, "utf8")) as ArchivePost[];
+  let rows: ArchivePost[];
+  try {
+    rows = JSON.parse(readFileSync(file, "utf8")) as ArchivePost[];
+  } catch (error) {
+    console.error("[ArchiveService] failed to read legacy posts", error);
+    cache = [];
+    return cache;
+  }
   cache = rows
     .map((post) => ({
       id: post.id,
