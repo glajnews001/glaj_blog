@@ -53,17 +53,24 @@ export const PostService = {
   },
 
   /** "Latest News" headlines (blog type Latest, no videos), without the lead story. */
-  latest(category: string | undefined, take = 7, excludeId?: string) {
+  latest(category: string | undefined, take = 7, excludeIds: string[] = []) {
     return summaries(
-      { category, blogTypes: LATEST_TYPES, excludeFileType: FILE_TYPE.VIDEO, excludeId },
+      { category, blogTypes: LATEST_TYPES, excludeFileType: FILE_TYPE.VIDEO, excludeIds },
       take,
       0,
     );
   },
 
-  /** "Trending News" (blog type Trending), without the lead story. */
-  trending(category: string | undefined, take = 6, excludeId?: string) {
-    return summaries({ category, blogTypes: [BLOG_TYPE.TRENDING], excludeId }, take, 0);
+  /**
+   * "Trending News": posts of type Trending first. When there are not enough, the
+   * column is filled with the newest other stories so it is never empty.
+   */
+  async trending(category: string | undefined, take = 6, excludeIds: string[] = [], fillerExcludeIds: string[] = []) {
+    const trending = await summaries({ category, blogTypes: [BLOG_TYPE.TRENDING], excludeIds }, take, 0);
+    if (trending.length >= take) return trending;
+    const used = [...excludeIds, ...fillerExcludeIds, ...trending.map((post) => post.id)];
+    const filler = await summaries({ category, excludeIds: used }, take - trending.length, 0);
+    return [...trending, ...filler];
   },
 
   /** Newest posts of any type. */

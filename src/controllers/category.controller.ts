@@ -9,9 +9,10 @@ const titleFor = (slug: string) =>
 export const CategoryController = {
   async getPage(slug: string): Promise<CategoryPayload> {
     const featured = await PostService.lead(slug);
-    const [latest, trending, videos, posts] = await Promise.all([
-      PostService.latest(slug, 7, featured?.id),
-      PostService.trending(slug, 6, featured?.id),
+    const leadIds = featured ? [featured.id] : [];
+    const latest = await PostService.latest(slug, 7, leadIds);
+    const [trending, videos, posts] = await Promise.all([
+      PostService.trending(slug, 6, leadIds, latest.map((post) => post.id)),
       PostService.videos(slug, 12, 300),
       PostService.byCategory(slug, PAGE_SIZE.category, 200),
     ]);
