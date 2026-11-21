@@ -15,7 +15,6 @@ export function CategoryView({ data }: CategoryViewProps) {
   if (data.isEmpty) {
     return (
       <SiteShell>
-        <AdSlot slot={AD_SLOTS.categoryEmpty} />
         <EmptyState title="No News Found" />
       </SiteShell>
     );
@@ -23,11 +22,10 @@ export function CategoryView({ data }: CategoryViewProps) {
 
   return (
     <SiteShell>
-      <AdSlot slot={AD_SLOTS.categoryTop} />
       <HeroSection latest={data.latest} trending={data.trending}>
         <FeaturedPost post={data.featured} />
       </HeroSection>
-      <AdSlot slot={AD_SLOTS.categoryMiddle} tall />
+      <AdSlot slot={AD_SLOTS.categoryMiddle} />
 
       {data.videos.length > 0 && (
         <section className="mx-auto max-w-[900px] px-4 py-6">

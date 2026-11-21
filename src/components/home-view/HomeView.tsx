@@ -37,7 +37,6 @@ export function HomeView({ data }: HomeViewProps) {
           ))}
         </section>
       )}
-      <AdSlot slot={AD_SLOTS.homeMiddle} tall />
 
       <section className="m-4 grid grid-cols-1 gap-x-[30px] tablet:grid-cols-2">
         {data.sections.map((section) => (
