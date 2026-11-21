@@ -46,19 +46,24 @@ async function summaries(filter: PostFilter, take: number, excerptLength = 220) 
 }
 
 export const PostService = {
-  /** "Latest News" headlines (blog type Normal, no videos). */
-  latest(category: string | undefined, take = 7) {
-    return summaries({ category, blogTypes: LATEST_TYPES, excludeFileType: FILE_TYPE.VIDEO }, take, 0);
+  /** The lead story for the centre column: the newest post of any type, except videos. */
+  async lead(category?: string): Promise<PostSummary | null> {
+    const row = await PostModel.findFirst({ category, excludeFileType: FILE_TYPE.VIDEO });
+    return row ? toSummary(row, 900) : null;
   },
 
-  /** The big featured story: newest "Trending" post that is not a video. */
-  async featured(category?: string): Promise<PostSummary | null> {
-    const row = await PostModel.findFirst({
-      category,
-      blogTypes: [BLOG_TYPE.TRENDING],
-      excludeFileType: FILE_TYPE.VIDEO,
-    });
-    return row ? toSummary(row, 900) : null;
+  /** "Latest News" headlines (blog type Latest, no videos), without the lead story. */
+  latest(category: string | undefined, take = 7, excludeId?: string) {
+    return summaries(
+      { category, blogTypes: LATEST_TYPES, excludeFileType: FILE_TYPE.VIDEO, excludeId },
+      take,
+      0,
+    );
+  },
+
+  /** "Trending News" (blog type Trending), without the lead story. */
+  trending(category: string | undefined, take = 6, excludeId?: string) {
+    return summaries({ category, blogTypes: [BLOG_TYPE.TRENDING], excludeId }, take, 0);
   },
 
   /** Newest posts of any type. */
@@ -145,6 +150,47 @@ export const PostService = {
       isApproved: true,
     });
     return toDetail(row);
+  },
+
+  async update(
+    id: string,
+    input: Partial<CreatePostInput>,
+    cloudName: string | undefined,
+  ): Promise<PostDetail> {
+    const existing = await PostModel.findById(id);
+    if (!existing) throw new HttpError(404, "Post not found.");
+
+    const title = clean(input.title, 100);
+    const category = clean(input.category, 40);
+    const blogType = typeof input.blogType === "string" ? input.blogType : "";
+    const content = typeof input.content === "string" ? input.content : "";
+    if (!title || !category || !blogType || !stripHtml(content)) throw new HttpError(400, "Required field missing.");
+
+    // Posts filed under a retired category may keep it; new choices must be current ones.
+    const categoryAllowed = category === existing.category || POST_CATEGORIES.some((c) => c.slug === category);
+    if (!categoryAllowed) throw new HttpError(400, "Unknown category.");
+    if (!BLOG_TYPE_OPTIONS.some((o) => o.value === blogType)) throw new HttpError(400, "Unknown blog type.");
+
+    const data: Parameters<typeof PostModel.update>[1] = {
+      title,
+      content: sanitizeArticle(content),
+      publishBy: clean(input.publishBy, 50),
+      category,
+      blogType,
+      isEyeWitness: category === "eye-witness",
+    };
+
+    // A new file is optional; when given it replaces the current one.
+    const imageUrl = clean(input.imageUrl, 1000);
+    if (imageUrl) {
+      const fileType = clean(input.fileType, 10);
+      if (fileType !== FILE_TYPE.IMAGE && fileType !== FILE_TYPE.VIDEO) throw new HttpError(400, "Unknown file type.");
+      if (!isCloudinaryUrl(imageUrl, cloudName)) throw new HttpError(400, "The uploaded file URL is not valid.");
+      data.imageUrl = imageUrl;
+      data.fileType = fileType;
+    }
+
+    return toDetail(await PostModel.update(id, data));
   },
 
   async remove(id: string) {

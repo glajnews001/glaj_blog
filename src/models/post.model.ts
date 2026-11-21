@@ -7,6 +7,7 @@ export type PostFilter = {
   category?: string;
   fileType?: string;
   excludeFileType?: string;
+  excludeId?: string;
   blogTypes?: string[];
   search?: string;
   /** Admin views include inactive posts. */
@@ -22,6 +23,7 @@ function buildWhere(filter: PostFilter): Prisma.PostWhereInput {
   if (filter.category) where.category = filter.category;
   if (filter.fileType) where.fileType = filter.fileType;
   if (filter.excludeFileType) where.fileType = { not: filter.excludeFileType };
+  if (filter.excludeId) where.id = { not: filter.excludeId };
   if (filter.blogTypes?.length) where.blogType = { in: filter.blogTypes };
   if (filter.search) {
     where.OR = [
@@ -53,6 +55,10 @@ export const PostModel = {
 
   count(filter: PostFilter = {}) {
     return db.post.count({ where: buildWhere(filter) });
+  },
+
+  update(id: string, data: Prisma.PostUpdateInput) {
+    return db.post.update({ where: { id }, data });
   },
 
   create(data: Prisma.PostCreateInput) {

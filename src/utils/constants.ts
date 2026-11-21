@@ -44,44 +44,41 @@ export type CategoryDef = { slug: string; label: string };
 
 /** Categories shown in the navigation bar, in order. */
 export const NAV_CATEGORIES: CategoryDef[] = [
+  { slug: "sport", label: "Sport" },
   { slug: "politics", label: "Politics" },
   { slug: "entertainment", label: "Entertainment" },
   { slug: "business", label: "Business" },
-  { slug: "sport", label: "Sport" },
-  { slug: "foreign", label: "Foreign" },
-  { slug: "eye-witness", label: "Eye witness" },
-  { slug: "education", label: "Education" },
   { slug: "extra", label: "Extra" },
+];
+
+/**
+ * Categories that older posts were filed under. They are no longer offered in the
+ * menu or the create form, but their posts and pages still work.
+ */
+export const LEGACY_CATEGORIES: CategoryDef[] = [
+  { slug: "foreign", label: "Foreign" },
+  { slug: "education", label: "Education" },
+  { slug: "eye-witness", label: "Eye-witness" },
   { slug: "article", label: "Article" },
   { slug: "career", label: "Career" },
 ];
 
 /** Categories that get their own block on the home page, in order. */
 export const HOME_SECTIONS: CategoryDef[] = [
-  { slug: "politics", label: "Politics" },
   { slug: "sport", label: "Sport" },
-  { slug: "education", label: "Education" },
+  { slug: "politics", label: "Politics" },
   { slug: "entertainment", label: "Entertainment" },
   { slug: "business", label: "Business" },
-  { slug: "foreign", label: "Foreign" },
-  { slug: "eye-witness", label: "Eye-witness" },
   { slug: "extra", label: "Extra" },
-  { slug: "article", label: "Article" },
-  { slug: "career", label: "Career" },
 ];
 
 /** Categories offered in the "create post" form. */
 export const POST_CATEGORIES: CategoryDef[] = [
   { slug: "sport", label: "Sport" },
-  { slug: "entertainment", label: "Entertainment" },
   { slug: "politics", label: "Politics" },
-  { slug: "eye-witness", label: "Eye-witness" },
+  { slug: "entertainment", label: "Entertainment" },
   { slug: "business", label: "Business" },
-  { slug: "foreign", label: "Foreign" },
-  { slug: "education", label: "Education" },
   { slug: "extra", label: "Extra" },
-  { slug: "article", label: "Article" },
-  { slug: "career", label: "Career" },
 ];
 
 /** Categories that get a row on the video gallery page. */

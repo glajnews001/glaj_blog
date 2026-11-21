@@ -1,6 +1,7 @@
 import { AdminPagination } from "@/components/admin-pagination/AdminPagination";
 import { AdminSection } from "@/components/admin-section/AdminSection";
 import { DataTable, type DataTableColumn } from "@/components/data-table/DataTable";
+import { EditPostButton } from "@/components/edit-post-button/EditPostButton";
 import { PostDetailButton } from "@/components/post-detail-button/PostDetailButton";
 import { TableToolbar } from "@/components/table-toolbar/TableToolbar";
 import type { PostsPagePayload } from "@/models/page.dto";
@@ -17,7 +18,13 @@ const columns: DataTableColumn<AdminPostRow>[] = [
   { key: "category", header: "Category", hideOnMobile: true, render: (row) => row.category },
   { key: "publishBy", header: "Published By", hideOnMobile: true, render: (row) => row.publishBy },
   { key: "status", header: "Status", render: (row) => (row.isActive ? "active" : "Deleted") },
-  { key: "more", header: "More..", render: (row) => <PostDetailButton postId={row.id} /> },
+  { key: "more", header: "More..", render: (row) => (
+      <span className="flex gap-2">
+        <PostDetailButton postId={row.id} />
+        <EditPostButton postId={row.id} />
+      </span>
+    ),
+  },
 ];
 
 export function ViewPostsView({ data }: ViewPostsViewProps) {

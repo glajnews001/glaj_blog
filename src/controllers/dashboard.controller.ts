@@ -45,9 +45,20 @@ export const DashboardController = {
     return post;
   },
 
+  /** Like getPost, but returns null instead of throwing so pages can render a 404. */
+  async findPost(id: string): Promise<PostDetail | null> {
+    await SessionService.requireAdmin();
+    return PostService.detailForAdmin(id);
+  },
+
   async createPost(input: Partial<CreatePostInput>): Promise<PostDetail> {
     await SessionService.requireAdmin();
     return PostService.create(input, MediaService.cloudName());
+  },
+
+  async updatePost(id: string, input: Partial<CreatePostInput>): Promise<PostDetail> {
+    await SessionService.requireAdmin();
+    return PostService.update(id, input, MediaService.cloudName());
   },
 
   async deletePost(id: string) {

@@ -24,6 +24,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Write the story
   const hostRef = useRef<HTMLDivElement>(null);
   const quillRef = useRef<Quill | null>(null);
   const onChangeRef = useRef(onChange);
+  const initialRef = useRef(value);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -44,6 +45,7 @@ export function RichTextEditor({ value, onChange, placeholder = "Write the story
         placeholder,
         modules: { toolbar: TOOLBAR },
       });
+      if (initialRef.current) quill.clipboard.dangerouslyPasteHTML(initialRef.current);
       quill.on("text-change", () => {
         const empty = quill.getText().trim().length === 0 && !quill.root.querySelector("img");
         onChangeRef.current(empty ? "" : quill.root.innerHTML);

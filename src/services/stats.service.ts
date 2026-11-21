@@ -2,11 +2,11 @@ import { format, startOfMonth, subMonths } from "date-fns";
 import { PostModel } from "@/models/post.model";
 import { MessageService } from "@/services/message.service";
 import { UserService } from "@/services/user.service";
-import { NAV_CATEGORIES, POST_CATEGORIES } from "@/utils/constants";
+import { LEGACY_CATEGORIES, NAV_CATEGORIES, POST_CATEGORIES } from "@/utils/constants";
 import type { DashboardPayload } from "@/models/page.dto";
 
 const labelFor = (slug: string) =>
-  [...NAV_CATEGORIES, ...POST_CATEGORIES].find((c) => c.slug === slug)?.label ?? slug;
+  [...NAV_CATEGORIES, ...POST_CATEGORIES, ...LEGACY_CATEGORIES].find((c) => c.slug === slug)?.label ?? slug;
 
 export const StatsService = {
   async dashboard(): Promise<DashboardPayload> {
