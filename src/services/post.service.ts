@@ -68,9 +68,18 @@ export const PostService = {
   async trending(category: string | undefined, take = 6, excludeIds: string[] = [], fillerExcludeIds: string[] = []) {
     const trending = await summaries({ category, blogTypes: [BLOG_TYPE.TRENDING], excludeIds }, take, 0);
     if (trending.length >= take) return trending;
-    const used = [...excludeIds, ...fillerExcludeIds, ...trending.map((post) => post.id)];
-    const filler = await summaries({ category, excludeIds: used }, take - trending.length, 0);
-    return [...trending, ...filler];
+    const taken = [...excludeIds, ...trending.map((post) => post.id)];
+    // Prefer stories that Latest News is not already showing.
+    const fresh = await summaries({ category, excludeIds: [...taken, ...fillerExcludeIds] }, take - trending.length, 0);
+    const combined = [...trending, ...fresh];
+    if (combined.length >= take || fillerExcludeIds.length === 0) return combined;
+    // Few posts overall: repeat Latest stories rather than leave the column empty.
+    const repeats = await summaries(
+      { category, excludeIds: [...taken, ...fresh.map((post) => post.id)] },
+      take - combined.length,
+      0,
+    );
+    return [...combined, ...repeats];
   },
 
   /** Newest posts of any type. */
